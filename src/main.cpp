@@ -1,9 +1,13 @@
+#define _USE_MATH_DEFINES
+#include <math.h>
+
+
 #include <uWS/uWS.h>
 #include <iostream>
 #include "json.hpp"
 #include "PID.h"
-#include <math.h>
 
+using namespace std;
 // for convenience
 using json = nlohmann::json;
 
@@ -28,6 +32,14 @@ std::string hasData(std::string s) {
   return "";
 }
 
+void ResetSimulator(uWS::WebSocket<uWS::SERVER> ws) {
+
+	std::string msg = "42[\"reset\",{}]";
+	ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
+
+}
+
+
 int main()
 {
   uWS::Hub h;
@@ -35,7 +47,8 @@ int main()
   PID pid;
   // TODO: Initialize the pid variable.
 
-  h.onMessage([&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+  h.onMessage([&pid
+	](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
@@ -50,16 +63,22 @@ int main()
           double cte = std::stod(j[1]["cte"].get<std::string>());
           double speed = std::stod(j[1]["speed"].get<std::string>());
           double angle = std::stod(j[1]["steering_angle"].get<std::string>());
-          double steer_value;
+          double steer_value = .01;
           /*
           * TODO: Calcuate steering value here, remember the steering value is
           * [-1, 1].
           * NOTE: Feel free to play around with the throttle and speed. Maybe use
           * another PID controller to control the speed!
           */
-          
-          // DEBUG
-          std::cout << "CTE: " << cte << " Steering Value: " << steer_value << std::endl;
+		  
+		  
+ 		  if (pid.is_first_move) {
+			  pid.Init(0.5, 0.005, 10, cte); 
+		  }
+		  else {
+			  pid.UpdateError(cte);
+		  }
+		  steer_value = - pid.TotalError();
 
           json msgJson;
           msgJson["steering_angle"] = steer_value;
@@ -74,6 +93,7 @@ int main()
         ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
       }
     }
+
   });
 
   // We don't need this since we're not using HTTP but if it's removed the program
@@ -101,7 +121,8 @@ int main()
   });
 
   int port = 4567;
-  if (h.listen(port))
+  //if (h.listen(port))
+  if (h.listen("127.0.0.1", port))
   {
     std::cout << "Listening to port " << port << std::endl;
   }
