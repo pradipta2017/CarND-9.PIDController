@@ -1,9 +1,19 @@
 # CarND-Controls-PID
 Self-Driving Car Engineer Nanodegree Program
 
+# Effect of P I D 
+* P: Proportional coefficient is set to existing error(cross track error). Effect of P value either overshoots or undershoots over the expected track.
+* I: Integral coefficient increases/decreases the action in relation to the speed along with time the speed has persisted. In my implementation, I does not have significant role in minimizing the CTE.
+* D: Derivative coefficient is responsible for flattening the error trajectory to smooth or horizontal line.
+
+# Choosing the final hyper-parameter(P, I, D)
+
+I arrived at the final hyper-parameter through manually setting P, I & D coefficient to smaller value and gradually increasing/adjusting to get the right values where car drives safely along with the track in the simulator. I took help of Ziegler-Nichols method while trying out the manual setup of the hyper-parameters.
+
 ---
 
-## Dependencies
+## Dependencies 
+
 
 * cmake >= 3.5
  * All OSes: [click here for installation instructions](https://cmake.org/install/)
